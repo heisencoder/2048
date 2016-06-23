@@ -109,23 +109,6 @@ GameManager.prototype.serialize = function () {
   };
 };
 
-// Save all tile positions and remove merger info
-GameManager.prototype.prepareTiles = function () {
-  this.grid.eachCell(function (x, y, tile) {
-    if (tile) {
-      tile.mergedFrom = null;
-      tile.savePosition();
-    }
-  });
-};
-
-// Move a tile and its representation
-GameManager.prototype.moveTile = function (tile, cell) {
-  this.grid.cells[tile.x][tile.y] = null;
-  this.grid.cells[cell.x][cell.y] = tile;
-  tile.updatePosition(cell);
-};
-
 // Move tiles on the grid in the specified direction
 GameManager.prototype.move = function (direction) {
   // 0: up, 1: right, 2: down, 3: left
