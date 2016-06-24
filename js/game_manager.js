@@ -73,26 +73,44 @@ GameManager.prototype.addRandomTile = function () {
     var tile;
     switch(this.difficulty) {
       case "easy":
+        tile = this.getSortedRatingList(value, function(a, b) {
+          if (a.directions > b.directions) return -1;
+          if (a.directions < b.directions) return 1;
+          if (a.lowestScore > b.lowestScore) return -1;
+          if (a.lowestScore < b.lowestScore) return 1;
+          if (a.highestScore > b.highestScore) return -1;
+          if (a.highestScore < b.highestScore) return 1;
+          if (a.random > b.random) return -1;
+          if (a.random < b.random) return 1;
+          return 0;
+        });
+        break;
+      
       case "hard":
-        var ratingList = this.getSortedRatingList(value);
-	if (this.difficulty == "easy") {
-	  tile = new Tile(ratingList[0].cell, value);
-	} else {
-	  tile = new Tile(ratingList[ratingList.length - 1].cell, value);
-	}
-	break;
+        tile = this.getSortedRatingList(value, function(a, b) {
+          if (a.directions < b.directions) return -1;
+          if (a.directions > b.directions) return 1;
+          if (a.highestScore < b.highestScore) return -1;
+          if (a.highestScore > b.highestScore) return 1;
+          if (a.lowestScore < b.lowestScore) return -1;
+          if (a.lowestScore > b.lowestScore) return 1;
+          if (a.random > b.random) return -1;
+          if (a.random < b.random) return 1;
+          return 0;
+        });
+        break;
 
       default:
       case "medium":
         tile = new Tile(this.grid.randomAvailableCell(), value);
-	break;
+        break;
     }
 
     this.grid.insertTile(tile);
   }
 };
 
-GameManager.prototype.getSortedRatingList = function (value) {
+GameManager.prototype.getSortedRatingList = function (value, sortFn) {
   var cells = this.grid.availableCells();
   var cellRatings = [];
   cells.forEach(function(cell) {
@@ -106,8 +124,8 @@ GameManager.prototype.getSortedRatingList = function (value) {
       var result = tempGrid.move(dir);
       if (result.moved) {
         availableDirections++;
-	lowestScore = Math.min(lowestScore, result.score);
-	highestScore = Math.max(highestScore, result.score);
+        lowestScore = Math.min(lowestScore, result.score);
+        highestScore = Math.max(highestScore, result.score);
       }
     }
 
@@ -120,17 +138,9 @@ GameManager.prototype.getSortedRatingList = function (value) {
     });
   }, this);
 
-  cellRatings.sort(function(a, b) {
-    if (a.directions > b.directions) return -1;
-    if (a.directions < b.directions) return 1;
-    if (a.highestScore > b.highestScore) return -1;
-    if (a.highestScore < b.highestScore) return 1;
-    if (a.random > b.random) return -1;
-    if (a.random < b.random) return 1;
-    return 0;
-  });
+  cellRatings.sort(sortFn);
 
-  return cellRatings;
+  return new Tile(cellRatings[0].cell, value);
 };
 
 // Sends the updated grid to the actuator
