@@ -5,6 +5,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.actuator       = new Actuator;
 
   this.startTiles     = 2;
+  this.difficulty     = "hard";
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
@@ -69,10 +70,67 @@ GameManager.prototype.addStartTiles = function () {
 GameManager.prototype.addRandomTile = function () {
   if (this.grid.cellsAvailable()) {
     var value = Math.random() < 0.9 ? 2 : 4;
-    var tile = new Tile(this.grid.randomAvailableCell(), value);
+    var tile;
+    switch(this.difficulty) {
+      case "easy":
+      case "hard":
+        var ratingList = this.getSortedRatingList(value);
+	if (this.difficulty == "easy") {
+	  tile = new Tile(ratingList[0].cell, value);
+	} else {
+	  tile = new Tile(ratingList[ratingList.length - 1].cell, value);
+	}
+	break;
+
+      default:
+      case "medium":
+        tile = new Tile(this.grid.randomAvailableCell(), value);
+	break;
+    }
 
     this.grid.insertTile(tile);
   }
+};
+
+GameManager.prototype.getSortedRatingList = function (value) {
+  var cells = this.grid.availableCells();
+  var cellRatings = [];
+  cells.forEach(function(cell) {
+    var lowestScore = 1000000;
+    var highestScore = 0;
+    var availableDirections = 0;
+    for (var dir = 0; dir < 4; dir++) {
+      var tempGrid = new Grid(this.grid.size, this.grid.cells);
+      var tile = new Tile(cell, value);
+      tempGrid.insertTile(tile);
+      var result = tempGrid.move(dir);
+      if (result.moved) {
+        availableDirections++;
+	lowestScore = Math.min(lowestScore, result.score);
+	highestScore = Math.max(highestScore, result.score);
+      }
+    }
+
+    cellRatings.push({
+      cell: cell,
+      lowestScore: lowestScore,
+      highestScore: highestScore,
+      directions: availableDirections,
+      random: Math.random()  // Last comparison -- just pick random position
+    });
+  }, this);
+
+  cellRatings.sort(function(a, b) {
+    if (a.directions > b.directions) return -1;
+    if (a.directions < b.directions) return 1;
+    if (a.highestScore > b.highestScore) return -1;
+    if (a.highestScore < b.highestScore) return 1;
+    if (a.random > b.random) return -1;
+    if (a.random < b.random) return 1;
+    return 0;
+  });
+
+  return cellRatings;
 };
 
 // Sends the updated grid to the actuator

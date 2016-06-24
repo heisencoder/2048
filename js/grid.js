@@ -26,7 +26,14 @@ Grid.prototype.fromState = function (state) {
 
     for (var y = 0; y < this.size; y++) {
       var tile = state[x][y];
-      row.push(tile ? new Tile(tile.position, tile.value) : null);
+      if (tile) {
+        if (tile.position) {
+          tile = new Tile(tile.position, tile.value);
+	} else {
+	  tile = new Tile({x: tile.x, y: tile.y}, tile.value);
+	}
+      }
+      row.push(tile);
     }
   }
 
