@@ -5,7 +5,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.actuator       = new Actuator;
 
   this.startTiles     = 2;
-  this.difficulty     = "hard";
+  this.difficulty     = "easy";
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
@@ -74,12 +74,12 @@ GameManager.prototype.addRandomTile = function () {
     switch(this.difficulty) {
       case "easy":
         tile = this.getSortedRatingList(value, function(a, b) {
-          if (a.directions > b.directions) return -1;
-          if (a.directions < b.directions) return 1;
           if (a.lowestScore > b.lowestScore) return -1;
           if (a.lowestScore < b.lowestScore) return 1;
           if (a.highestScore > b.highestScore) return -1;
           if (a.highestScore < b.highestScore) return 1;
+          if (a.directions > b.directions) return -1;
+          if (a.directions < b.directions) return 1;
           if (a.random > b.random) return -1;
           if (a.random < b.random) return 1;
           return 0;
