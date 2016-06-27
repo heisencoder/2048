@@ -29,9 +29,9 @@ Grid.prototype.fromState = function (state) {
       if (tile) {
         if (tile.position) {
           tile = new Tile(tile.position, tile.value);
-	} else {
-	  tile = new Tile({x: tile.x, y: tile.y}, tile.value);
-	}
+        } else {
+          tile = new Tile({x: tile.x, y: tile.y}, tile.value);
+        }
       }
       row.push(tile);
     }
